@@ -5,7 +5,7 @@ import csv
 import time
 import random
 
-# 获取页面内容
+# Get page content
 def get_page(match_url, headers):
     try:
         response = requests.get(match_url, headers=headers)
@@ -15,31 +15,31 @@ def get_page(match_url, headers):
         else:
             return None
     except RequestException as err:
-        print('获取页面错误')
+        print('Get page fault')
         print(err)
 
-# 解析页面数据
+# Parse page data
 def parse_page(html):
-    # 解析返回的Json数据
+    # Parse the returned Json data
     html = json.loads(html)
 
-    # 比赛双方存储数据的list
+    # A list of data stored by both parties
     team_1_list = ['name', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     team_2_list = ['name', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    # 比赛双方球队名字
+    # Names of the teams on both sides of the match
     team_1_list[0] = html['entity']['teams'][0]['team']['name']
     team_2_list[0] = html['entity']['teams'][1]['team']['name']
 
-    # 比赛双方球队id
+    # Team id of both teams
     id_1 = str(html['entity']['teams'][0]['team']['club']['id'])
     id_2 = str(html['entity']['teams'][1]['team']['club']['id'])
 
-    # 比赛双方球队的进球数
+    # The number of goals scored by both teams
     score_1 = html['entity']['teams'][0]['score']
     score_2 = html['entity']['teams'][1]['score']
 
-    # list中存储比赛结果：1为赢球，-1为输球，0为平
+    # The result of the game is stored in the list: 1 means winning, -1 means losing, 0 means tie
     if score_1 > score_2:
         team_1_list[15] = 1
         team_2_list[15] = -1
@@ -50,52 +50,52 @@ def parse_page(html):
         team_1_list[15] = 0
         team_2_list[15] = 0
 
-    # 从网页中解析比赛数据
+    # Parse the game data from the web page
     for item in html['data'][id_1]['M']:
         if item['name'] == 'accurate_pass':
-            # 比赛数据:accurate pass
+            # Game data:accurate pass
             team_1_list[1] = item['value']
         elif item['name'] == 'possession_percentage':
-            # 比赛数据:possession percentage
+            # Game data:possession percentage
             team_1_list[2] = item['value']
         elif item['name'] == 'touches':
-            # 比赛数据:touches
+            # Game data:touches
             team_1_list[3] = item['value']
         elif item['name'] == 'total_pass':
-            # 比赛数据:total pass
+            # Game data:total pass
             team_1_list[4] = item['value']
         elif item['name'] == 'fk_foul_lost':
-            # 比赛数据:Fouls conceded
+            # Game data:Fouls conceded
             team_1_list[5] = item['value']
         elif item['name'] == 'shot_off_target':
-            # 比赛数据:shot off target
+            # Game data:shot off target
             team_1_list[6] = item['value']
         elif item['name'] == 'offtarget_att_assist':
-            # 比赛数据:off target assist
+            # Game data:off target assist
             team_1_list[7] = item['value']
         elif item['name'] == 'ontarget_scoring_att':
-            # 比赛数据:score on target
+            # Game data:score on target
             team_1_list[8] = item['value']
         elif item['name'] == 'won_corners':
-            # 比赛数据:won corners
+            # Game data:won corners
             team_1_list[9] = item['value']
         elif item['name'] == 'total_tackle':
-            # 比赛数据:total tackle
+            # Game data:total tackle
             team_1_list[10] = item['value']
         elif item['name'] == 'total_clearance':
-            # 比赛数据:total clearance
+            # Game data:total clearance
             team_1_list[11] = item['value']
         elif item['name'] == 'total_yel_card':
-            # 比赛数据:total yellow cards
+            # Game data:total yellow cards
             team_1_list[12] = item['value']
         elif item['name'] == 'total_offside':
-            # 比赛数据:total offside
+            # Game data:total offside
             team_1_list[13] = item['value']
         elif item['name'] == 'ontarget_att_assist':
-            # 比赛数据:on target assist
+            # Game data:on target assist
             team_1_list[14] = item['value']
     
-    # 重复上述过程
+    # Repeat the above process
     for item in html['data'][id_2]['M']:
         if item['name'] == 'accurate_pass':
             team_2_list[1] = item['value']
@@ -126,17 +126,17 @@ def parse_page(html):
         elif item['name'] == 'ontarget_att_assist':
             team_2_list[14] = item['value']
     
-    # 返回比赛双方数据列表
+    # Return to the data list of both parties
     return team_1_list, team_2_list
 
-# 将数据存入文件
+# Save data to file
 def write2csv(data):
     with open('all_data.csv','a',newline='',encoding='utf-8-sig') as f:
         writer = csv.writer(f)
         writer.writerow(data)
 
-if __name__ == "__main__":
-    # 模拟浏览器表头  
+def scrapy_data():
+    # Analog browser header
     headers = {
         'Accept': '*/*',
         'Accept-Language': 'zh-CN,zh;q=0.9',
@@ -184,15 +184,15 @@ if __name__ == "__main__":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
     ]
     
-    # 构造英超比赛网页url
+    # Constructing the Premier League website url
     team_1, team_2 = [], []
     for index in range(46605, 46985):
         match_url = "https://footballapi.pulselive.com/football/stats/match/" + str(index)
-        # 获取比赛网页
+        # Get the contest page
         user_agent = random.choice(user_agent_list)
         headers['User-Agent'] = user_agent
         html = get_page(match_url, headers)
-        # 解析比赛网页数据
+        # Analyze the competition webpage data
         team_1_list, team_2_list = parse_page(html)
         team_1.append(team_1_list)
         team_2.append(team_2_list)
